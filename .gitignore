@@ -1,0 +1,17 @@
+npm-debug.log
+node_modules/
+dist/
+# Ignore all .vsix files
+*.vsix
+
+# Exception: do not ignore files ending with 81.vsix
+!*.7z*
+
+# JUNIT testresult
+test-results.xml
+
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
+
+*.how

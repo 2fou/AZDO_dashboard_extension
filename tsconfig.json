@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strict": true,
+        "target": "es2015",
+        "rootDir": "src/",
+        "outDir": "dist/",
+        "jsx": "react",
+        "lib": [
+            "es6",
+            "dom",
+            "es2015.promise",
+            "es2019"
+        ],
+        "types": [],
+        "esModuleInterop": true
+    }
+}
