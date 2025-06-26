@@ -1,32 +1,4 @@
 {
-  "baseUri": "https://localhost:3000",
-  "id": "dashboard-pdf-generator",
-  "public": false,
-  "version": "1.0.0",
-  "contributions": [
-    {
-      "id": "pdf-dashboard-generator",
-      "type": "ms.vss-dashboards-web.widget",
-      "description": "A widget for generating PDF documents from dashboards",
-      "targets": [
-        "ms.vss-dashboards-web.widget-catalog"
-      ],
-      "properties": {
-        "name": "PDF Dashboard Generator",
-        "uri": "dist/PDFDashBoardGenerator/PDFDashBoardGenerator.html",
-        "description": "Generate PDFs from dashboard content",
-        "catalogIconUrl": "dist/img/pdf-gen-icon.png",
-        "previewImageUrl": "dist/img/pdf-gen-preview.png",
-        "supportedSizes": [
-          {
-            "rowSpan": 5,
-            "columnSpan": 3
-          }
-        ],
-        "supportedScopes": [
-          "project_team"
-        ]
-      }
-    }
-  ]
+    "baseUri": "https://localhost:3000",
+    "public": false
 }
