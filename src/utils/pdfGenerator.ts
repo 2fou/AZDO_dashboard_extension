@@ -21,6 +21,7 @@ export const generatePDFFromCanvas = async (canvas: HTMLCanvasElement, dashboard
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
     pdf.text(`Project: ${SDK.getWebContext().project.name}`, 20, 35);
+    pdf.text(`Project: ${SDK.getWebContext().project.name}`, 20, 35);
     
     const imgData = canvas.toDataURL('image/png');
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -50,6 +51,7 @@ export const generatePDFFromCanvas = async (canvas: HTMLCanvasElement, dashboard
         `Name: ${dashboardData.name}`,
         `Description: ${dashboardData.description || 'No description'}`,
         `Owner: Unknown`,
+        `Owner: Unknown`,
         `Last Modified: ${new Date(dashboardData.lastAccessedDate).toLocaleString()}`,
         `Widgets: ${dashboardData.widgets.length}`,
         `Dashboard ID: ${dashboardData.id}`
@@ -77,6 +79,7 @@ export const generateMetadataPDF = async (
         
         doc.setFontSize(12);
         doc.text(`Description: ${dashboardData.description || 'No description'}`, 20, 50);
+        doc.text(`Project: ${SDK.getWebContext().project.name}`, 20, 70);
         doc.text(`Project: ${SDK.getWebContext().project.name}`, 20, 70);
         doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 90);
         doc.text(`Number of widgets: ${dashboardData.widgets.length}`, 20, 110);
