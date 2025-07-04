@@ -14,11 +14,11 @@ export const generatePDFFromCanvas = async (canvas: HTMLCanvasElement, dashboard
     
     // Add header
     pdf.setFontSize(16);
-    pdf.setFont(undefined, 'bold');
+    pdf.setFont('helvetica', 'bold');
     pdf.text(dashboardData.name, 20, 20);
     
     pdf.setFontSize(10);
-    pdf.setFont(undefined, 'normal');
+    pdf.setFont('helvetica', 'normal');
     pdf.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
     pdf.text(`Project: ${SDK.getWebContext().project.name}`, 20, 35);
     
@@ -39,11 +39,11 @@ export const generatePDFFromCanvas = async (canvas: HTMLCanvasElement, dashboard
     // Add metadata page
     pdf.addPage();
     pdf.setFontSize(14);
-    pdf.setFont(undefined, 'bold');
+    pdf.setFont('helvetica', 'bold');
     pdf.text('Dashboard Information', 20, 30);
     
     pdf.setFontSize(12);
-    pdf.setFont(undefined, 'normal');
+    pdf.setFont('helvetica', 'normal');
     let yPos = 45;
     
     const metadata = [

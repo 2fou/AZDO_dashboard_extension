@@ -25,7 +25,7 @@
     "@types/react-dom": "^18.3.7",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.8.1",
-    "html-webpack-plugin": "^5.5.3",
+    "html-webpack-plugin": "^5.6.3",
     "rimraf": "^5.0.0",
     "style-loader": "^3.3.3",
     "tfx-cli": "^0.21.1",
