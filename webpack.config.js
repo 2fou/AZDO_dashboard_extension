@@ -50,12 +50,12 @@ module.exports = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: './public/dashboard-pdf-page.html',
+            template: './src/public/dashboard-pdf-page.html',
             filename: 'dashboard-pdf-page.html',
             chunks: ['index']
         }),
         new HtmlWebpackPlugin({
-            template: './public/dashboard-pdf-widget.html',
+            template: './src/public/dashboard-pdf-widget.html',
             filename: 'dashboard-pdf-widget.html',
             chunks: ['widget']
         }),

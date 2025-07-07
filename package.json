@@ -11,14 +11,18 @@
     "publish": "tfx extension publish --manifest-globs vss-extension.json",
     "clean": "rimraf dist *.vsix"
   },
+  "compilerOptions": {
+     "isolatedModules": false
+  },
   "dependencies": {
+    "@fluentui/react": "^8.123.1",
     "azure-devops-extension-api": "^4.0.2",
     "azure-devops-extension-sdk": "^4.0.2",
     "azure-devops-ui": "^2.238.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0"
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.23",
@@ -43,6 +47,6 @@
     "export",
     "react"
   ],
-  "author": "Your Name",
+  "author": "Alexandre Claus",
   "license": "MIT"
 }

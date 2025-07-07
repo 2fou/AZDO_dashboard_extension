@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as SDK from "azure-devops-extension-sdk";
-import { DashboardRestClient } from "azure-devops-extension-api/Dashboard";
-import { getClient } from "azure-devops-extension-api";
 import { captureDashboardVisualContent, waitForDashboardToLoad } from '../utils/dashboardCapture';
-import { generateMetadataPDF } from '../utils/pdfGenerator';
 import html2canvas from 'html2canvas';
 
 const DashboardPdfWidget: React.FC = () => {
