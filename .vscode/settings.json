@@ -1,0 +1,32 @@
+{
+    "yaml.schemas": {
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.1.25-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.1.45-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.1.47-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.1.48-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.1.49-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.1.52-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.1.53-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.1.56-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:\\Users\\alexa\\.vscode\\extensions\\continue.continue-1.0.15-win32-x64\\config-yaml-schema.json": [
+            ".continue/**/*.yaml"
+        ],
+        "c:/Users/alexa/.vscode/extensions/continue.continue-1.0.15-win32-x64/config-yaml-schema.json": "file:///c%3A/Users/alexa/.continue/config.yaml"
+    }
+}

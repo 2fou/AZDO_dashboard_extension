@@ -1,10 +1,11 @@
+// src/index.tsx
+
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import * as SDK from 'azure-devops-extension-sdk';
+import ReactDOM from 'react-dom'; // Updated import
 import DashboardPdfExport from './components/DashboardPdfExport';
 import './styles/extension.css';
 
-SDK.init().then(() => {
-    const root = ReactDOM.createRoot(document.getElementById('root')!);
-    root.render(<DashboardPdfExport />);
-});
+const rootElement = document.getElementById('root'); // Check if element exists
+if (rootElement) {
+    ReactDOM.render(<DashboardPdfExport />, rootElement);
+}

@@ -1,12 +1,12 @@
 {
   "manifestVersion": 1,
   "id": "dashboard-pdf-generator-react",
-  "publisher": "AgileCoachingSolutionsFeatureAddon",
-  "version": "1.0.1",
+  "publisher": "AgileCoachingSolutions",
+  "version": "1.0.3",
   "name": "Dashboard PDF Generator (React)",
   "description": "Export Azure DevOps dashboards to PDF format using React and TypeScript",
   "public": false,
-  "categories": ["Dashboards"],
+  "categories": ["Azure Boards"],
   "tags": ["dashboard", "pdf", "export", "react", "typescript"],
   "targets": [
     {

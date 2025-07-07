@@ -76,7 +76,6 @@ module.exports = {
         },
         compress: true,
         port: 3000,
-        https: true,
         hot: true,
         headers: {
             'Access-Control-Allow-Origin': '*',
