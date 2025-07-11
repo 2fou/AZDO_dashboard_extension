@@ -1,17 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import * as SDK from "azure-devops-extension-sdk";
+import { DashboardRestClient, Dashboard } from "azure-devops-extension-api/Dashboard";
+import { getClient } from "azure-devops-extension-api";
+import { TeamContext } from "azure-devops-extension-api/Core";
 import { captureDashboardVisualContent, waitForDashboardToLoad } from '../utils/dashboardCapture';
+import { generatePDFFromCanvas } from '../utils/pdfGenerator';
 import html2canvas from 'html2canvas';
 
+
+ SDK.init();
+ 
 const DashboardPdfWidget: React.FC = () => {
     const [status, setStatus] = useState<{ message: string; type: string }>({ message: '', type: '' });
-    const [isExporting, setIsExporting] = useState<boolean>(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [dashboardInfo, setDashboardInfo] = useState<{ name: string; id: string } | null>(null);
+    const [teamContext, setTeamContext] = useState<TeamContext | null>(null);
 
     useEffect(() => {
         const initialize = async () => {
-            await SDK.init();
+           
+            const webContext = SDK.getWebContext();
+
+            const context: TeamContext = {
+                project: webContext.project.name,
+                projectId: webContext.project.id,
+                team: webContext.team?.name ?? "",
+                teamId: webContext.team?.id ?? ""
+            };
+            
+            setTeamContext(context);
+
             SDK.register(SDK.getContributionId(), {
-                load: function() {
+                load: function(widgetSettings: any) {
+                    const dashboardId = widgetSettings.dashboard?.id || 
+                                       widgetSettings.dashboardId || 
+                                       extractDashboardIdFromUrl();
+                    
+                    if (dashboardId) {
+                        setDashboardInfo({
+                            id: dashboardId,
+                            name: widgetSettings.dashboard?.name || 'Current Dashboard'
+                        });
+                    }
+                    
                     return { name: "PDF Export Widget", size: { width: 1, height: 1 } };
                 }
             });
@@ -19,41 +50,75 @@ const DashboardPdfWidget: React.FC = () => {
         initialize();
     }, []);
 
-    const showStatus = (message: string, type: string) => {
-        setStatus({ message, type });
-        if (type === 'success') {
-            setTimeout(() => {
-                setStatus({ message: '', type: '' });
-            }, 3000);
+    const extractDashboardIdFromUrl = (): string | null => {
+        try {
+            const url = window.location.href;
+            const regex = /dashboards\/([a-f0-9-]+)/i;
+            const dashboardMatch = regex.exec(url);
+            return dashboardMatch ? dashboardMatch[1] : null;
+        } catch (error) {
+            console.warn('Could not extract dashboard ID from URL:', error);
+            return null;
+        }
+    };
+
+    const getCurrentDashboard = async (): Promise<Dashboard> => {
+        try {
+            if (!teamContext) {
+                throw new Error('Team context is not available');
+            }
+
+            const dashboardClient = getClient(DashboardRestClient);
+
+            if (dashboardInfo?.id) {
+                return await dashboardClient.getDashboard(teamContext, dashboardInfo.id);
+            }
+
+            const dashboards = await dashboardClient.getDashboardsByProject(teamContext);
+            
+            if (!dashboards || dashboards.length === 0) {
+                throw new Error('No dashboards found');
+            }
+
+            const currentDashboardId = extractDashboardIdFromUrl();
+            if (currentDashboardId) {
+                const currentDashboard = dashboards.find((d: Dashboard) => d.id === currentDashboardId);
+                if (currentDashboard) {
+                    return currentDashboard;
+                }
+            }
+
+            return dashboards[0];
+        } catch (error) {
+            console.error('Error getting current dashboard:', error);
+            throw error;
         }
     };
 
     const handleExportClick = async () => {
         if (isExporting) return;
-        
         setIsExporting(true);
+        
         try {
-            showStatus('Generating PDF...', 'info');
-            await exportCurrentDashboard();
-            showStatus('PDF generated successfully!', 'success');
-        } catch (error) {
-            console.error('PDF generation failed:', error);
-            showStatus(`Error: ${error}`, 'error');
-        } finally {
-            setIsExporting(false);
-        }
-    };
-
-    const exportCurrentDashboard = async () => {
-        try {
-            const dashboardElement = await captureDashboardVisualContent();
+            setStatus({ message: 'Getting dashboard information...', type: 'info' });
             
+            const currentDashboard = await getCurrentDashboard();
+            
+            if (!currentDashboard) {
+                throw new Error('Could not identify current dashboard');
+            }
+
+            setStatus({ message: `Capturing dashboard: ${currentDashboard.name}...`, type: 'info' });
+
+            const dashboardElement = await captureDashboardVisualContent();
             if (!dashboardElement) {
                 throw new Error('Dashboard container not found');
             }
-            
+
             await waitForDashboardToLoad();
-            
+
+            setStatus({ message: 'Generating PDF...', type: 'info' });
+
             const canvas = await html2canvas(dashboardElement, {
                 allowTaint: true,
                 useCORS: true,
@@ -64,33 +129,58 @@ const DashboardPdfWidget: React.FC = () => {
                 height: dashboardElement.scrollHeight,
                 backgroundColor: '#ffffff'
             });
+
+            await generatePDFFromCanvas(canvas, currentDashboard);
             
-            // Convert canvas to PDF and download
-            const link = document.createElement('a');
-            link.download = `dashboard_${new Date().toISOString().split('T')[0]}.png`;
-            link.href = canvas.toDataURL();
-            link.click();
+            setStatus({ message: `PDF for "${currentDashboard.name}" generated successfully!`, type: 'success' });
+            setTimeout(() => setStatus({ message: '', type: '' }), 3000);
             
         } catch (error) {
-            throw new Error(`Failed to export dashboard: ${error}`);
+            console.error('PDF generation failed:', error);
+            setStatus({ message: `Error: ${error}`, type: 'error' });
+        } finally {
+            setIsExporting(false);
         }
     };
 
     return (
-        <div className="widget pdf-export-widget">
+        <div style={{ padding: '10px', textAlign: 'center' }}>
+            {dashboardInfo && (
+                <div style={{ 
+                    fontSize: '11px', 
+                    color: '#666', 
+                    marginBottom: '8px',
+                    textAlign: 'left' 
+                }}>
+                    Dashboard: {dashboardInfo.name}
+                </div>
+            )}
             <button 
-                className={`export-button ${isExporting ? 'exporting' : ''}`}
                 onClick={handleExportClick}
                 disabled={isExporting}
-                title="Export Dashboard to PDF"
+                style={{
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    backgroundColor: isExporting ? '#ccc' : '#0078d4',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: isExporting ? 'not-allowed' : 'pointer'
+                }}
             >
-                <span className="button-icon">📄</span>
-                <span className="button-text">
-                    {isExporting ? 'Exporting...' : 'Export PDF'}
-                </span>
+                {isExporting ? 'Exporting...' : 'Export Current Dashboard'}
             </button>
             {status.message && (
-                <div className={`status-message ${status.type}`}>
+                <div style={{
+                    marginTop: '10px',
+                    padding: '8px',
+                    backgroundColor: status.type === 'error' ? '#ffebee' : 
+                                   status.type === 'success' ? '#e8f5e8' : '#fff3cd',
+                    color: status.type === 'error' ? '#c62828' : 
+                           status.type === 'success' ? '#2e7d32' : '#856404',
+                    borderRadius: '4px',
+                    fontSize: '12px'
+                }}>
                     {status.message}
                 </div>
             )}

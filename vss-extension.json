@@ -1,38 +1,65 @@
 {
-  "manifestVersion": 1,
-  "id": "dashboard-pdf-generator-react",
-  "publisher": "AgileCoachingSolutions",
-  "version": "1.0.3",
-  "name": "Dashboard PDF Generator (React)",
-  "description": "Export Azure DevOps dashboards to PDF format using React and TypeScript",
-  "public": false,
-  "categories": ["Azure Boards"],
-  "tags": ["dashboard", "pdf", "export", "react", "typescript"],
-  "targets": [
-    {
-      "id": "Microsoft.VisualStudio.Services"
-    }
-  ],
-  "demands": ["api-version/7.1"],
-  "icons": {
-    "default": "dist/images/pdf-icon.png"
-  },
-  "contributions": [
-    {
-      "id": "dashboard-pdf-widget-react",
-      "type": "ms.vss-web.hub",
-      "targets": [
-        "ms.vss-dashboards-web.dashboard-hub"
-      ],
-      "properties": {
-        "name": "PDF Export (React)",
-        "description": "Export current dashboard to PDF format",
-        "catalogIconUrl": "dist/images/pdf-icon.png",
-        "uri": "dist/index.html" 
-      }
-    }
-  ],
-  "scopes": [
-    "vso.dashboards_manage"
-  ]
+    "manifestVersion": 1,
+    "id": "dashboard-pdf-generator-react",
+    "publisher": "AgileCoachingSolutions",
+    "version": "1.0.11",
+    "name": "Dashboard PDF Generator (React)",
+    "description": "Export Azure DevOps dashboards to PDF format using React and TypeScript",
+    "public": false,
+    "categories": ["Azure Boards"],
+    "tags": ["dashboard", "pdf", "export", "react", "typescript"],
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "files": [
+        {
+            "path": "dist",
+            "addressable": true
+        }
+    ],
+    "demands": ["api-version/7.1"],
+    "icons": {
+        "default": "dist/images/pdf-icon.png"
+    },
+    "contributions": [
+        {
+            "id": "dashboard-pdf-widget-react",
+            "type": "ms.vss-dashboards-web.widget",
+            "targets": [
+                "ms.vss-dashboards-web.widget-catalog"
+            ],
+            "properties": {
+                "name": "PDF Export (React)",
+                "description": "Export current dashboard to PDF format",
+                "catalogIconUrl": "dist/images/pdf-icon.png",
+                "uri": "dist/dashboard-pdf-widget.html",
+                "previewImageUrl": "dist/images/pdf-icon.png",
+                "supportedSizes": [
+                    {
+                        "rowSpan": 1,
+                        "columnSpan": 2
+                    }
+                ],
+                "supportedScopes": ["project_team"]
+            }
+        },
+        {
+            "id": "dashboard-management",
+            "type": "ms.vss-web.hub",
+            "targets": [
+                "ms.vss-web.project-admin-hub-group"
+            ],
+            "properties": {
+                "name": "Dashboard Management",
+                "description": "Manage your dashboards and select for PDF export",
+                "catalogIconUrl": "dist/images/manage-icon.png",
+                "uri": "dist/dashboard-pdf-page.html"
+            }
+        }
+    ],
+    "scopes": [
+        "vso.dashboards_manage"
+    ]
 }

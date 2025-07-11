@@ -2,10 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { DashboardRestClient, Dashboard } from "azure-devops-extension-api/Dashboard";
 import { getClient } from "azure-devops-extension-api";
 import * as SDK from "azure-devops-extension-sdk";
-// CORRECTION : Importer TeamContext depuis Core
 import { TeamContext } from "azure-devops-extension-api/Core";
 import { captureDashboardVisualContent, waitForDashboardToLoad } from '../utils/dashboardCapture';
-import { generatePDFFromCanvas, generateMetadataPDF } from '../utils/pdfGenerator';
+import { generatePDFFromCanvas } from '../utils/pdfGenerator';
 import html2canvas from 'html2canvas';
 
 interface DashboardPdfExportProps {
@@ -29,32 +28,39 @@ const DashboardPdfExport: React.FC<DashboardPdfExportProps> = ({ dashboardId: pr
 
     const dashboardClient = getClient(DashboardRestClient);
 
+
+    SDK.init();
     useEffect(() => {
+
+        SDK.register("dashboard-management", () => ({
+        // Define any interface or methods if necessary for your extension here
+    }));
         const initialize = async () => {
             try {
-                await SDK.init();
-                await setupTeamContext();
-                await loadDashboards();
+
+                await SDK.ready(); // Ensure SDK is ready before proceeding
+                const webContext = SDK.getWebContext();
+
+                if (!webContext?.project?.id) {
+                    throw new Error('Web context is missing required project information');
+                }
+
+                const context: TeamContext = {
+                    project: webContext.project.name,
+                    projectId: webContext.project.id,
+                    team: webContext.team?.name || '',
+                    teamId: webContext.team?.id || ''
+                };
+
+                setTeamContext(context);
+                await loadDashboards(context);
+                SDK.notifyLoadSucceeded();
             } catch (error) {
                 showStatus(`Erreur d'initialisation: ${error}`, 'error');
             }
         };
         initialize();
     }, []);
-
-    const setupTeamContext = async () => {
-        const webContext = SDK.getWebContext();
-
-        // CORRECTION : Construire le TeamContext selon la documentation officielle
-        const context: TeamContext = {
-            project: webContext.project.name,
-            projectId: webContext.project.id,
-            team: webContext.team?.name || '',
-            teamId: webContext.team?.id || ''
-        };
-
-        setTeamContext(context);
-    };
 
     const showStatus = useCallback((message: string, type: StatusMessage['type']) => {
         setStatus({ message, type });
@@ -65,20 +71,13 @@ const DashboardPdfExport: React.FC<DashboardPdfExportProps> = ({ dashboardId: pr
         }
     }, []);
 
-    const loadDashboards = async () => {
-        if (!teamContext) {
-            showStatus('Contexte de l\'équipe non disponible', 'error');
-            return;
-        }
-
+    const loadDashboards = async (context: TeamContext) => {
         try {
-            // CORRECTION : Utiliser getDashboardsByProject avec TeamContext
-            const dashboardsResponse = await dashboardClient.getDashboardsByProject(teamContext);
+            const dashboardsResponse = await dashboardClient.getDashboardsByProject(context);
 
-            // La réponse est directement un tableau de Dashboard
             setDashboards(dashboardsResponse || []);
 
-            if (dashboardsResponse.length === 0) {
+            if (!dashboardsResponse || dashboardsResponse.length === 0) {
                 showStatus('Aucun dashboard trouvé pour cette équipe', 'info');
             }
         } catch (error) {
@@ -90,8 +89,6 @@ const DashboardPdfExport: React.FC<DashboardPdfExportProps> = ({ dashboardId: pr
         if (!teamContext) {
             throw new Error('Contexte de l\'équipe non disponible');
         }
-
-        // CORRECTION : Utiliser getDashboard avec TeamContext et dashboardId
         return await dashboardClient.getDashboard(teamContext, dashboardId);
     };
 
@@ -134,22 +131,14 @@ const DashboardPdfExport: React.FC<DashboardPdfExportProps> = ({ dashboardId: pr
 
     const exportDashboardToPDF = async (dashboardId: string) => {
         try {
-            // Obtenir les données du dashboard sélectionné
             const dashboardData = await getDashboardData(dashboardId);
-
-            // Tenter de capturer le contenu visuel
             const dashboardElement = await captureDashboardVisualContent();
 
             if (!dashboardElement) {
-                // Fallback vers un PDF basé sur les métadonnées
-                await generateMetadataPDF(dashboardData, includeHeader, includeWidgets);
-                return;
+                throw new Error("Impossible de trouver l'élément du dashboard à capturer.");
             }
 
-            // Attendre que le dashboard soit complètement chargé
             await waitForDashboardToLoad();
-
-            // Capturer le dashboard en tant qu'image
             const canvas = await html2canvas(dashboardElement, {
                 allowTaint: true,
                 useCORS: true,
@@ -158,26 +147,13 @@ const DashboardPdfExport: React.FC<DashboardPdfExportProps> = ({ dashboardId: pr
                 scrollY: 0,
                 width: dashboardElement.scrollWidth,
                 height: dashboardElement.scrollHeight,
-                backgroundColor: '#ffffff',
-                onclone: function (clonedDoc) {
-                    const clonedElement = clonedDoc.querySelector('.dashboard-container') ||
-                        clonedDoc.querySelector('[data-testid="dashboard-container"]') ||
-                        clonedDoc.querySelector('.dashboard-content');
-                    if (clonedElement && clonedElement instanceof HTMLElement) {
-                        clonedElement.style.overflow = 'visible';
-                        clonedElement.style.height = 'auto';
-                    }
-                }
+                backgroundColor: '#ffffff'
             });
 
-            // Générer le PDF à partir du canvas
             await generatePDFFromCanvas(canvas, dashboardData);
 
         } catch (error) {
             console.error('Échec de la capture du dashboard:', error);
-            // Fallback vers un PDF basé sur les métadonnées
-            const dashboardData = await getDashboardData(dashboardId);
-            await generateMetadataPDF(dashboardData, includeHeader, includeWidgets);
         }
     };
 
@@ -227,7 +203,8 @@ const DashboardPdfExport: React.FC<DashboardPdfExportProps> = ({ dashboardId: pr
                             onChange={(e) => setIncludeHeader(e.target.checked)}
                             disabled={isLoading} />
                         Inclure l'en-tête du dashboard
-                    </label>                </div>
+                    </label>
+                </div>
             </div>
 
             <div className="action-buttons">
@@ -262,7 +239,6 @@ const DashboardPdfExport: React.FC<DashboardPdfExportProps> = ({ dashboardId: pr
                             <p><strong>Nom:</strong> {previewData.name}</p>
                             <p><strong>Description:</strong> {previewData.description || 'Aucune description'}</p>
                             <p><strong>Nombre de widgets:</strong> {previewData.widgets?.length || 0}</p>
-                            {/* CORRECTION : Utiliser ownerId au lieu de ownedBy?.displayName */}
                             <p><strong>Propriétaire (ID):</strong> {previewData.ownerId || 'Non spécifié'}</p>
                             <p><strong>Modifié par (ID):</strong> {previewData.modifiedBy || 'Non spécifié'}</p>
                             <p><strong>Dernière modification:</strong> {
@@ -270,7 +246,6 @@ const DashboardPdfExport: React.FC<DashboardPdfExportProps> = ({ dashboardId: pr
                                     new Date(previewData.lastAccessedDate).toLocaleDateString('fr-FR') :
                                     'Non disponible'
                             }</p>
-                            {/* Correction pour modifiedDate si disponible */}
                             <p><strong>Date de modification:</strong> {
                                 previewData.modifiedDate ?
                                     new Date(previewData.modifiedDate).toLocaleDateString('fr-FR') :

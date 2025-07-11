@@ -1,11 +1,11 @@
 // src/index.tsx
-
 import React from 'react';
-import ReactDOM from 'react-dom'; // Updated import
+import ReactDOM from 'react-dom';
 import DashboardPdfExport from './components/DashboardPdfExport';
 import './styles/extension.css';
 
-const rootElement = document.getElementById('root'); // Check if element exists
+const rootElement = document.getElementById('root');
+
 if (rootElement) {
     ReactDOM.render(<DashboardPdfExport />, rootElement);
 }
