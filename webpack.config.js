@@ -1,102 +1,76 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require("path");
+const fs = require("fs");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
-// Configuration conditionnelle selon l'environnement
-const isDevelopment = process.env.NODE_ENV !== 'production';
-const publicPath = isDevelopment ? '/dist/' : './';
+// Webpack entry points. Mapping from resulting bundle name to the source file entry.
+const entries = {};
 
-module.exports = {
-    mode: isDevelopment ? 'development' : 'production',
-    entry: {
-        index: './src/index.tsx',
-        widget: './src/widget.tsx'
+// Loop through subfolders in the "src" folder and add an entry for each one
+const srcDir = path.join(__dirname, "src");
+fs.readdirSync(srcDir).filter(dir => {
+    if (fs.statSync(path.join(srcDir, dir)).isDirectory() && dir !== 'img' && dir !== 'ScreenShot') {
+        entries[dir] = "./" + path.relative(process.cwd(), path.join(srcDir, dir, dir));
+    }
+});
+
+// Add styles.css as a separate entry point
+entries['styles'] = './src/styles/styles.css'
+
+module.exports = (env, argv) => ({
+    entry: entries,
+    output: {
+        publicPath: "/dist/",
+        filename: "[name]/[name].js"
+    },
+    resolve: {
+        extensions: [".ts", ".tsx", ".js"],
+        alias: {
+            "azure-devops-extension-sdk": path.resolve("node_modules/azure-devops-extension-sdk")
+        },
+    },
+    stats: {
+        warnings: false
     },
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/,
+                loader: "ts-loader"
             },
             {
-                test: /\.css$/i,
-                use: ['style-loader', 'css-loader'],
-            },
-            // Ajout pour les assets (images, fonts)
-            {
-                test: /\.(png|svg|jpg|jpeg|gif)$/i,
-                type: 'asset/resource',
+                test: /\.scss$/,
+                use: ["style-loader", "css-loader", "sass-loader"],
             },
             {
-                test: /\.(png|svg|jpg|jpeg|gif)$/i,
-                type: 'public/images',
+                test: /\.css$/,
+                use: ["style-loader", "css-loader"],
             },
-
-        ],
-    },
-    resolve: {
-        extensions: ['.tsx', '.ts', '.js'],
-        alias: {
-            // Alias pour faciliter les imports
-            '@': path.resolve(__dirname, 'src'),
-        }
-    },
-    output: {
-        filename: '[name].js',
-        path: path.resolve(__dirname, 'dist'),
-        publicPath: publicPath,
-        clean: true,
+            {
+                test: /\.(woff|woff2|eot|ttf|otf)$/,
+                type: 'asset/inline'
+            },
+            {
+                test: /\.html$/,
+                type: 'asset/resource'
+            }
+        ]
     },
     plugins: [
-        new HtmlWebpackPlugin({
-            template: './src/public/dashboard-pdf-page.html',
-            filename: 'dashboard-pdf-page.html',
-            chunks: ['index']
-        }),
-        new HtmlWebpackPlugin({
-            template: './src/public/dashboard-pdf-widget.html',
-            filename: 'dashboard-pdf-widget.html',
-            chunks: ['widget']
-        }),
         new CopyWebpackPlugin({
             patterns: [
-                { 
-                    from: './src/public/images', 
-                    to: 'images',
-                    noErrorOnMissing: true // Évite les erreurs si le dossier n'existe pas
-                }
+                { from: "**/*.html", context: "src" },
+                { from: "img/**/*", context: "src" } , 
+                //{ from: "ScreenShot/**/*", context: "src" }  
             ]
         })
     ],
-    devServer: {
-        static: {
-            directory: path.join(__dirname, 'dist'),
-            publicPath: '/dist/'
-        },
-        compress: true,
-        port: 3000,
-        hot: true,
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-            'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization'
-        },
-        allowedHosts: 'all',
-        // Gestion des erreurs et overlay
-        client: {
-            overlay: {
-                errors: true,
-                warnings: false,
-            },
-        },
-    },
-    devtool: isDevelopment ? 'inline-source-map' : 'source-map',
-    
-    // Optimisations pour la production
-    optimization: {
-        splitChunks: {
-            chunks: 'all',
-        },
-    },
-};
+    ...(env.WEBPACK_SERVE
+        ? {
+            devtool: 'inline-source-map',
+            devServer: {
+                server: 'https',
+                port: 3000
+            }
+        }
+        : {})
+});

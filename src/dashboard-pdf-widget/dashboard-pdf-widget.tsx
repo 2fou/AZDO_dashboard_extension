@@ -1,15 +1,15 @@
+// src/dashboard-pdf-widget/dashboard-pdf-widget.tsx
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import * as SDK from "azure-devops-extension-sdk";
 import { DashboardRestClient, Dashboard } from "azure-devops-extension-api/Dashboard";
 import { getClient } from "azure-devops-extension-api";
 import { TeamContext } from "azure-devops-extension-api/Core";
-import { captureDashboardVisualContent, waitForDashboardToLoad } from '../utils/dashboardCapture';
-import { generatePDFFromCanvas } from '../utils/pdfGenerator';
+import { captureDashboardVisualContent, waitForDashboardToLoad } from '../utils/utils';
+import { generatePDFFromCanvas } from '../utils/utils';
 import html2canvas from 'html2canvas';
+import '../styles/styles.css';
 
-
- SDK.init();
- 
 const DashboardPdfWidget: React.FC = () => {
     const [status, setStatus] = useState<{ message: string; type: string }>({ message: '', type: '' });
     const [isExporting, setIsExporting] = useState(false);
@@ -17,8 +17,8 @@ const DashboardPdfWidget: React.FC = () => {
     const [teamContext, setTeamContext] = useState<TeamContext | null>(null);
 
     useEffect(() => {
+        SDK.init();
         const initialize = async () => {
-           
             const webContext = SDK.getWebContext();
 
             const context: TeamContext = {
@@ -27,7 +27,7 @@ const DashboardPdfWidget: React.FC = () => {
                 team: webContext.team?.name ?? "",
                 teamId: webContext.team?.id ?? ""
             };
-            
+
             setTeamContext(context);
 
             SDK.register(SDK.getContributionId(), {
@@ -35,14 +35,14 @@ const DashboardPdfWidget: React.FC = () => {
                     const dashboardId = widgetSettings.dashboard?.id || 
                                        widgetSettings.dashboardId || 
                                        extractDashboardIdFromUrl();
-                    
+
                     if (dashboardId) {
                         setDashboardInfo({
                             id: dashboardId,
                             name: widgetSettings.dashboard?.name || 'Current Dashboard'
                         });
                     }
-                    
+
                     return { name: "PDF Export Widget", size: { width: 1, height: 1 } };
                 }
             });
@@ -75,7 +75,7 @@ const DashboardPdfWidget: React.FC = () => {
             }
 
             const dashboards = await dashboardClient.getDashboardsByProject(teamContext);
-            
+
             if (!dashboards || dashboards.length === 0) {
                 throw new Error('No dashboards found');
             }
@@ -98,12 +98,12 @@ const DashboardPdfWidget: React.FC = () => {
     const handleExportClick = async () => {
         if (isExporting) return;
         setIsExporting(true);
-        
+
         try {
             setStatus({ message: 'Getting dashboard information...', type: 'info' });
-            
+
             const currentDashboard = await getCurrentDashboard();
-            
+
             if (!currentDashboard) {
                 throw new Error('Could not identify current dashboard');
             }
@@ -131,10 +131,10 @@ const DashboardPdfWidget: React.FC = () => {
             });
 
             await generatePDFFromCanvas(canvas, currentDashboard);
-            
+
             setStatus({ message: `PDF for "${currentDashboard.name}" generated successfully!`, type: 'success' });
             setTimeout(() => setStatus({ message: '', type: '' }), 3000);
-            
+
         } catch (error) {
             console.error('PDF generation failed:', error);
             setStatus({ message: `Error: ${error}`, type: 'error' });
@@ -188,4 +188,9 @@ const DashboardPdfWidget: React.FC = () => {
     );
 };
 
-export default DashboardPdfWidget;
+const widgetRootElement = document.getElementById('widget-root');
+if (widgetRootElement) {
+    ReactDOM.render(<DashboardPdfWidget />, widgetRootElement);
+} else {
+    console.error('Widget root element not found');
+}

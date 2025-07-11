@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@fluentui/react": "^8.123.1",
-    "azure-devops-extension-api": "^4.0.2",
-    "azure-devops-extension-sdk": "^4.0.2",
+    "azure-devops-extension-api": "^4.234.0",
+    "azure-devops-extension-sdk": "^3.1.2",
     "azure-devops-ui": "^2.238.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
