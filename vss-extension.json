@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "dashboard-pdf-generator-react",
     "publisher": "AgileCoachingSolutions",
-    "version": "1.0.13",
+    "version": "1.0.31",
     "name": "Dashboard PDF Generator (React)",
     "description": "Export Azure DevOps dashboards to PDF format using React and TypeScript",
     "public": false,
@@ -25,6 +25,7 @@
     },
     "contributions": [
         {
+
             "id": "dashboard-pdf-widget-react",
             "type": "ms.vss-dashboards-web.widget",
             "targets": [
@@ -39,7 +40,7 @@
                 "supportedSizes": [
                     {
                         "rowSpan": 1,
-                        "columnSpan": 2
+                        "columnSpan": 1
                     }
                 ],
                 "supportedScopes": ["project_team"]
@@ -54,7 +55,7 @@
             "properties": {
                 "name": "Dashboard Management",
                 "description": "Manage your dashboards and select for PDF export",
-                "catalogIconUrl": "dist/img/pdf-icon",
+                "catalogIconUrl": "dist/img/pdf-icon.png",
                 "uri": "dist/dashboard-pdf-page/dashboard-pdf-page.html"
             }
         }
