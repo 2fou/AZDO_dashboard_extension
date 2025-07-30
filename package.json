@@ -2,7 +2,7 @@
   "name": "azure-devops-dashboard-pdf-extension",
   "version": "1.0.0",
   "description": "Export Azure DevOps dashboards to PDF format using React",
-  "main": "dist/index.js",
+  "main": "webpack.config.js",
   "scripts": {
     "build": "webpack --mode production",
     "dev": "webpack --mode development --watch",
